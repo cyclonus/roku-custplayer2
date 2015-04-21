@@ -5,7 +5,7 @@ function main()
 
  print "initializing.."
  app = initApp()   
- playDefaultClip(app)     
+ 'playDefaultClip(app)     
  app.paint()          
  app.handleEvents()
  

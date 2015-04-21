@@ -15,33 +15,33 @@ Function initApp()
     'player.SetPositionNotificationPeriod(5) 
     
     navigationContentURL = "pkg:/json/content.json"
-    navContent    = LoadNavigationContent(navigationContentURL) 
-    menuControl   = initMenuControl(navContent)
-    playerControl = initPlayerControl()
+    navContent = LoadNavigationContent(navigationContentURL)
+             
+    controls = {
+      menuControl:initMenuControl(navContent)
+      playerControl:initPlayerControl()        
+    }
     
-   app = {
+    app = {
           
-     player:player 
-     canvas:canvas 
+      player:player 
+      canvas:canvas      
+      port:port
+      
+      'navContent:navContent    
+      controls:controls
      
-     port:port
-     navContent:navContent
-     menuControl:menuControl
-     playerControl:playerControl
-     paint:paintAll
-     handleEvents:loopEvents
-     activeControl:getScreenActiveControl
-     
-     showMenu:showMenuControl
-     hideMenu:hideMenuControl
-     
-     onLeftKey:handleLeftKey                                                           
-     onUpKey:handleUpKey            
-     onRightKey:handleRightKey                                              
-     onDownKey:handleDownKey                
-     onExitKey:handleExitKey
-     onOkKey:handleOkKey           
-   }
+      paint:paintAll
+      handleEvents:loopEvents
+                      
+      onLeftKey:handleLeftKey                                                           
+      onUpKey:handleUpKey            
+      onRightKey:handleRightKey                                              
+      onDownKey:handleDownKey                
+      onExitKey:handleExitKey
+      onOkKey:handleOkKey             
+                  
+    }
    
    return app
    
@@ -49,43 +49,19 @@ End Function
 
 Function paintAll()
     m.canvas.AllowUpdates(false)          
-    m.canvas.Clear()  
-    'm.canvas.SetLayer(0, { Color: "#00000000", CompositionMode: "Source" })
-        
-    ' Do, any painting here through the canvas object 
-    m.menuControl.paint(m.canvas) 
-    'm.playerControl.paint(m.canvas)    
+    m.canvas.Clear()
+     
+    m.canvas.SetLayer(0, { Color: "#6384A6", CompositionMode: "Source" })                 
+    ' Do, any painting here through the canvas object     
+    for each k in m.controls
+      m.controls[k].paint(m.canvas) 
+    end for    
                                                                                           
     m.canvas.AllowUpdates(true)
     m.canvas.Show()     
  
 End function 
-
-Function getScreenActiveControl()
-  ' Here, There can only be one control active at the time
-  ' Such logic I manage by hand
-  ' bigger applications could use some kind of manager   
-  if( m.menucontrol.isActive() )
-   return m.menuControl
-  end if
-  
-  if( m.playerControl.isActive() )
-   return m.playerControl
-  end if
-  
-  return invalid
-End Function    
-   
-Function showMenuControl()
-   m.menuControl.activate(true)
-   m.paint()
-End Function
-
-Function hideMenuControl()
-   m.menuControl.activate(false)
-   m.paint()
-End Function
-    
+       
 Function loopEvents()
 
    while true                                                           
@@ -118,51 +94,47 @@ End function
 
 'If I had interfaces, this would become 'IUserInput'   
 Function handleLeftKey()
-   control = m.activeControl()
-   if( control <> invalid )
-     control.onLeftKey()   
-   else
-     m.showMenu() ' This function should change flags as required then call paintAll   
-   end if
+  handled = false   
+   for each k in m.controls
+     handled = m.controls[k].onLeftKey(m)
+     if(handled)
+       print 'handled!'
+       Exit For
+     end if        
+   end for  
+     
 end Function                                                
            
-Function handleUpKey() 
-   control = m.activeControl()
-   if( control <> invalid )
-     control.onUpKey()
-   end if
+Function handleUpKey()     
+     
+   for each k in m.controls
+      m.controls[k].onUpKey(m) 
+   end for    
 end Function
             
-Function handleRightKey() 
-   control = m.activeControl()
-   if( control <> invalid )
-     control.onRightKey()
-   else
-     m.hideMenu() 
-   end if
+Function handleRightKey()
+   for each k in m.controls
+      m.controls[k].onRightKey(m) 
+   end for      
 end Function                                            
     
 Function handleDownKey() 
-   control = m.activeControl()
-   if( control <> invalid )
-     control.onDownKey()
-   
-   end if
+   for each k in m.controls
+      m.controls[k].onDownKey(m) 
+   end for   
 end Function                
 
 Function handleExitKey() 
-   control = m.activeControl()
-   if( control <> invalid )
-     control.onExitKey()
-   end if
+   for each k in m.controls
+      m.controls[k].onExitKey(m) 
+   end for
 return 1
 end Function 
 
-Function handleOkKey()
-  control = m.activeControl()
-   if( control <> invalid )
-     control.onOkKey()
-   end if
+Function handleOkKey()     
+   for each k in m.controls
+      m.controls[k].onOkKey(m) 
+   end for   
 end Function
                        
 ' end of interface      
